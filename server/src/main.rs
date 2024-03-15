@@ -23,6 +23,13 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, hyper::Err
             Ok(Response::new(Body::from(reversed_body)))
         }
 
+        (&Method::POST, "/parrot") => {
+            let whole_body = hyper::body::to_bytes(req.into_body()).await?;
+            let request = String::from_utf8_lossy(&whole_body);
+            let parroted_body = format!("You said: {}", request);
+            Ok(Response::new(Body::from(parroted_body)))
+        }
+
         // Return the 404 Not Found for other routes.
         _ => {
             let mut not_found = Response::default();
@@ -48,3 +55,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         });
     }
 }
+
+/*
+OUTPUT:
+% curl http://localhost:8080/
+Try POSTing data to /echo such as: `curl localhost:8080/echo -XPOST -d 'hello world'`
+
+% curl http://localhost:8080/echo -XPOST -d 'hello already'
+hello already
+
+% curl http://localhost:8080/parrot -XPOST -d 'hello already'
+You said: hello already
+
+ */
